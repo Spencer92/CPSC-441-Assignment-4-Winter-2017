@@ -1,5 +1,17 @@
 package router.router;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
+import java.net.Socket;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Timer;
+
 
 
 /**
@@ -15,7 +27,18 @@ public class Router {
  	private int numNodes;
 	private int[] prev;
 	private int[] distancevector;
-
+	private String peerip;
+	private int routerid;
+	private int port;
+	private String configfile;
+	private int neighbourupdate;
+	private int routeupdate;
+	private DatagramSocket clientSocket;
+	private InetAddress IPAddress;
+	private DataOutputStream outputStream;
+	private DataInputStream inputStream;
+	private static final int MAX_BYTE_SIZE = 1000;
+	
 	/**
      	* Constructor to initialize the program 
      	* 
@@ -29,6 +52,13 @@ public class Router {
      */
 	public Router(String peerip, int routerid, int port, String configfile, int neighborupdate, int routeupdate) {
 	
+		this.peerip = peerip;
+		this.routerid = routerid;
+		this.port = port;
+		this.configfile = configfile;
+		this.neighbourupdate = neighborupdate;
+		this.routeupdate = routeupdate;
+		
 
 	
 	}
@@ -48,11 +78,77 @@ public class Router {
           	{
           		System.out.println(i + "\t\t   " + distancevector[i] +  "\t\t\t" +  prev[i]);
           	}
+        	
+//    		this.file_name = file_name;
+ //   		Path path = Paths.get(this.file_name);
+    		byte [] fileByteInfo = null;
+    		Socket socket = null;
+    		byte checkForReceivedInfo = Byte.MIN_VALUE;
+    		byte [] dataToSend = new byte[MAX_BYTE_SIZE];
+//    		Segment segment = null;
+
+//    		queue = new TxQueue(this.window);
+    		int indexFileInfo;
+    		int indexSender;
+    		int seqNum = 0;
+
+
+    		
+    		
+    		try {
+  //  			fileByteInfo = Files.readAllBytes(path);
+ //   			socket = new Socket(this.server_name,SERVER_PORT);
+    			checkForReceivedInfo = 1;
+//    			segment = new Segment();
+    			clientSocket = new DatagramSocket(7777);
+        		LinkStateVender vender = new LinkStateVender(this,clientSocket);
+        		Thread aThread = new Thread(vender);
+    			//Start the thread that will receive the acks
+//    			AckHandler handler = new AckHandler(this, clientSocket);
+//    			Thread aThread = new Thread(handler);
+ //   			aThread.start();
+//    			aTimer = new Timer();
+    			
+    			
+    			IPAddress = InetAddress.getByName("localhost");
+
+    			
+    			outputStream = new DataOutputStream(socket.getOutputStream());
+//    			outputStream.writeUTF(this.file_name);			
+//    			outputStream.flush();
+    			inputStream = new DataInputStream(socket.getInputStream());
+    			checkForReceivedInfo = inputStream.readByte();				
+    			
+    			} catch (IOException e) {
+    				// TODO Auto-generated catch block
+    				e.printStackTrace();
+    		}
 		
 	 	/*******************/
 
 	}
-
+	
+	public synchronized void processUpDateDS(DatagramPacket receivepacket)
+	{
+	// Update data structure(s).
+	// Forward link state message received to neighboring nodes
+	// based on broadcast algorithm used.
+	}
+	public synchronized void processUpdateNeighbor(){
+	// Send node’s link state vector to neighboring nodes as link
+	// state message.
+	// Schedule task if Method-1 followed to implement recurring
+	// timer task.
+	}
+	public synchronized void processUpdateRoute(){
+	// If link state vectors of all nodes received,
+	// Yes => Compute route info based on Dijkstra’s algorithm
+	// and print as per the output format.
+	// No => ignore the event.
+	// Schedule task if Method-1 followed to implement recurring
+	// timer task.
+	}
+	
 	/* A simple test driver 
      	
 	*/
