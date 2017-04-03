@@ -10,6 +10,7 @@ import java.net.Socket;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.LinkedList;
 import java.util.Timer;
 
 
@@ -38,6 +39,10 @@ public class Router {
 	private DataOutputStream outputStream;
 	private DataInputStream inputStream;
 	private static final int MAX_BYTE_SIZE = 1000;
+	private int[] allNodesDistance;
+	private boolean[] allNodesAdjacent;
+	private static final int MAX_NODES = 10;
+	LinkedList<LinkState> routers = new LinkedList<LinkState>();
 	
 	/**
      	* Constructor to initialize the program 
@@ -58,7 +63,15 @@ public class Router {
 		this.configfile = configfile;
 		this.neighbourupdate = neighborupdate;
 		this.routeupdate = routeupdate;
+		this.allNodesDistance = new int[MAX_NODES];
+		this.allNodesAdjacent = new boolean[MAX_NODES];
 		
+		for(int i = 0; i < MAX_NODES; i++)
+		{
+			this.allNodesDistance[i] = 999;
+			this.allNodesAdjacent[i] = false;
+		}
+		this.allNodesDistance[routerid] = 0;
 
 	
 	}
@@ -81,23 +94,58 @@ public class Router {
         	
 //    		this.file_name = file_name;
  //   		Path path = Paths.get(this.file_name);
+        	Path path = Paths.get(this.configfile);
     		byte [] fileByteInfo = null;
     		Socket socket = null;
     		byte checkForReceivedInfo = Byte.MIN_VALUE;
     		byte [] dataToSend = new byte[MAX_BYTE_SIZE];
+    		byte [] configFileInfo = null;
 //    		Segment segment = null;
 
 //    		queue = new TxQueue(this.window);
     		int indexFileInfo;
     		int indexSender;
     		int seqNum = 0;
-
-
+    		int index = 0;
+    		int routerDist;
+    		int port;
     		
     		
     		try {
   //  			fileByteInfo = Files.readAllBytes(path);
  //   			socket = new Socket(this.server_name,SERVER_PORT);
+    			configFileInfo = Files.readAllBytes(path);
+    			
+    			for(int i = 0; i < configFileInfo.length; i++)
+    			{
+    				System.out.print(configFileInfo[i] + " ");
+    				byte[] convert = new byte[1];
+    				convert[0] = configFileInfo[i];
+    				System.out.print(new String(convert,"UTF-8"));
+    				System.out.println();
+    			}
+
+    			System.out.println(configFileInfo[2] - 'A');
+    			System.out.println(configFileInfo.length);
+    			
+    			
+    			while(index < configFileInfo.length)
+    			{
+    				routerDist = configFileInfo[index + 2] - 'A';
+    				this.allNodesDistance[routerDist] = configFileInfo[index + 6];
+    				port = ((configFileInfo[index + 8]-'0')*1000) + ((configFileInfo[index+9]-'0')*100) + ((configFileInfo[index+10]-'0')*10) + (configFileInfo[index+11]-'0');
+
+    				System.out.println(configFileInfo[index+8]);
+    				System.out.println(configFileInfo[index+9]);
+    				System.out.println(configFileInfo[index+10]);
+    				System.out.println(configFileInfo[index+11]);
+    				System.out.println(port);
+    				index += 13;    				
+    			}
+    			
+    			
+    			System.exit(0);
+    			
     			checkForReceivedInfo = 1;
 //    			segment = new Segment();
     			clientSocket = new DatagramSocket(7777);

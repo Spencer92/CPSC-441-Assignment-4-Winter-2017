@@ -2,8 +2,9 @@ package router.router;
 
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.util.TimerTask;
 
-public class LinkStateVender implements Runnable
+public class LinkStateVender extends TimerTask
 {
 	private Router router;
 	private DatagramSocket receivePacket;
