@@ -43,6 +43,7 @@ public class Router {
 	private boolean[] allNodesAdjacent;
 	private static final int MAX_NODES = 10;
 	LinkedList<LinkState> routers = new LinkedList<LinkState>();
+	private boolean end = false;
 	
 	/**
      	* Constructor to initialize the program 
@@ -109,6 +110,7 @@ public class Router {
     		int index = 0;
     		int routerDist;
     		int port;
+    		LinkStateReceiver receiver;
     		
     		
     		try {
@@ -140,17 +142,17 @@ public class Router {
     				System.out.println(configFileInfo[index+10]);
     				System.out.println(configFileInfo[index+11]);
     				System.out.println(port);
+    				routers.add(new LinkState(this.routerid,port,this.allNodesDistance));
     				index += 13;    				
     			}
     			
     			
-    			System.exit(0);
     			
     			checkForReceivedInfo = 1;
 //    			segment = new Segment();
     			clientSocket = new DatagramSocket(7777);
-        		LinkStateVender vender = new LinkStateVender(this,clientSocket);
-        		Thread aThread = new Thread(vender);
+        		receiver = new LinkStateReceiver();
+        		Thread aThread = new Thread(receiver);
     			//Start the thread that will receive the acks
 //    			AckHandler handler = new AckHandler(this, clientSocket);
 //    			Thread aThread = new Thread(handler);
@@ -176,8 +178,17 @@ public class Router {
 
 	}
 	
+	
+	public boolean isEnd()
+	{
+		return this.end;
+	}
+	
 	public synchronized void processUpDateDS(DatagramPacket receivepacket)
 	{
+		LinkState state = new LinkState(receivepacket);
+		
+		
 	// Update data structure(s).
 	// Forward link state message received to neighboring nodes
 	// based on broadcast algorithm used.
