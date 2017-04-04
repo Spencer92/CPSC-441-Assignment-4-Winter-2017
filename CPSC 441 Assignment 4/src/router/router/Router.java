@@ -143,6 +143,7 @@ public class Router {
     				System.out.println(configFileInfo[index+11]);
     				System.out.println(port);
     				routers.add(new LinkState(this.routerid,port,this.allNodesDistance));
+    				this.allNodesAdjacent[routerDist] = true;
     				index += 13;    				
     			}
     			
@@ -150,9 +151,11 @@ public class Router {
     			
     			checkForReceivedInfo = 1;
 //    			segment = new Segment();
-    			clientSocket = new DatagramSocket(7777);
-        		receiver = new LinkStateReceiver();
+    			clientSocket = new DatagramSocket(this.routerid);
+        		receiver = new LinkStateReceiver(this,clientSocket);
         		Thread aThread = new Thread(receiver);
+        		aThread.start();
+        		
     			//Start the thread that will receive the acks
 //    			AckHandler handler = new AckHandler(this, clientSocket);
 //    			Thread aThread = new Thread(handler);
@@ -187,6 +190,33 @@ public class Router {
 	public synchronized void processUpDateDS(DatagramPacket receivepacket)
 	{
 		LinkState state = new LinkState(receivepacket);
+		boolean infiniteLength = true;
+		int [] distUpdate = state.cost;
+
+		
+		for(int i = 0; i < distUpdate.length; i++)
+		{
+			if(distUpdate[i] < 999)
+			{
+				infiniteLength = false;
+				break;
+			}
+		}
+		
+		if(infiniteLength)
+		{
+			return;
+		}
+		
+		for(int i = 0; i < this.allNodesDistance.length && i < distUpdate.length; i++)
+		{
+			if(this.allNodesDistance[i] > distUpdate[i])
+			{
+				this.allNodesDistance[i] = distUpdate[i];
+			}
+		}
+		
+
 		
 		
 	// Update data structure(s).
