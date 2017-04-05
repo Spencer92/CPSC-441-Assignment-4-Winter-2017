@@ -7,6 +7,8 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.net.SocketException;
+import java.net.UnknownHostException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -44,6 +46,10 @@ public class Router {
 	private static final int MAX_NODES = 10;
 	LinkedList<LinkState> routers = new LinkedList<LinkState>();
 	private boolean end = false;
+	private static final int INFINITE_LENGTH = 999;
+	private int [] origNodeDist;
+	private int [][] nodeInfo;
+	private LinkState [] connectors;
 	
 	/**
      	* Constructor to initialize the program 
@@ -66,6 +72,7 @@ public class Router {
 		this.routeupdate = routeupdate;
 		this.allNodesDistance = new int[MAX_NODES];
 		this.allNodesAdjacent = new boolean[MAX_NODES];
+		this.origNodeDist = new int[MAX_NODES];
 		
 		for(int i = 0; i < MAX_NODES; i++)
 		{
@@ -111,12 +118,15 @@ public class Router {
     		int routerDist;
     		int port;
     		LinkStateReceiver receiver;
+    		Timer[] timers;
+    		int timerCount = 0;
     		
     		
     		try {
   //  			fileByteInfo = Files.readAllBytes(path);
  //   			socket = new Socket(this.server_name,SERVER_PORT);
     			configFileInfo = Files.readAllBytes(path);
+				IPAddress = InetAddress.getByName(this.peerip);
     			
     			for(int i = 0; i < configFileInfo.length; i++)
     			{
@@ -130,11 +140,36 @@ public class Router {
     			System.out.println(configFileInfo[2] - 'A');
     			System.out.println(configFileInfo.length);
     			
+    			this.nodeInfo = new int[configFileInfo[0]+1][];
+    			timers = new Timer[configFileInfo[0]];
+    			
+    			for(int i = 0; i < this.nodeInfo.length-1; i++)
+    			{
+    				this.nodeInfo[i] = new int[this.nodeInfo.length-1];
+    				this.nodeInfo[this.nodeInfo.length][i] = Integer.MIN_VALUE;
+    			}
+    			
+    			
+    			this.connectors = new LinkState[configFileInfo[0]];
+    			this.allNodesDistance = new int[configFileInfo[0] + 2];
+    			this.allNodesAdjacent = new boolean[configFileInfo[0]];
+    			this.allNodesDistance[this.allNodesDistance.length-2] = this.routerid;
+    			this.allNodesDistance[this.allNodesDistance.length-1] = 0;
+    			
+    			for(int i = 0; i < this.allNodesAdjacent.length; i++)
+    			{
+    				this.allNodesDistance[i] = INFINITE_LENGTH;
+    				this.allNodesAdjacent[i] = false;
+    			}
+    			
+    			
     			
     			while(index < configFileInfo.length)
     			{
+    				
     				routerDist = configFileInfo[index + 2] - 'A';
     				this.allNodesDistance[routerDist] = configFileInfo[index + 6];
+    				this.origNodeDist[routerDist] = configFileInfo[index + 6];
     				port = ((configFileInfo[index + 8]-'0')*1000) + ((configFileInfo[index+9]-'0')*100) + ((configFileInfo[index+10]-'0')*10) + (configFileInfo[index+11]-'0');
 
     				System.out.println(configFileInfo[index+8]);
@@ -144,6 +179,13 @@ public class Router {
     				System.out.println(port);
     				routers.add(new LinkState(this.routerid,port,this.allNodesDistance));
     				this.allNodesAdjacent[routerDist] = true;
+    				if(timerCount < timers.length)
+    				{
+        				connectors[timerCount] = new LinkState(this.routerid,port,this.allNodesDistance);    					
+    					timers[timerCount] = new Timer();
+    					timers[timerCount].scheduleAtFixedRate(new LinkStateVender(this,clientSocket,connectors[timerCount],port), 0,1000);
+    				}
+    				timerCount++;
     				index += 13;    				
     			}
     			
@@ -155,6 +197,8 @@ public class Router {
         		receiver = new LinkStateReceiver(this,clientSocket);
         		Thread aThread = new Thread(receiver);
         		aThread.start();
+        		
+        		
         		
     			//Start the thread that will receive the acks
 //    			AckHandler handler = new AckHandler(this, clientSocket);
@@ -196,7 +240,7 @@ public class Router {
 		
 		for(int i = 0; i < distUpdate.length; i++)
 		{
-			if(distUpdate[i] < 999)
+			if(distUpdate[i] < INFINITE_LENGTH)
 			{
 				infiniteLength = false;
 				break;
@@ -216,6 +260,24 @@ public class Router {
 			}
 		}
 		
+		LinkedList<LinkState> newRouters = new LinkedList<LinkState>();
+		
+		
+		for(int i = 0; i < allNodesAdjacent.length; i++)
+		{
+			if(allNodesAdjacent[i])
+			{
+				
+			}
+		}
+		
+		for(LinkState routerThrough : this.routers)
+		{
+			if(routerThrough.destId < allNodesAdjacent.length && allNodesAdjacent[routerThrough.destId])
+			{
+				
+			}
+		}
 
 		
 		
@@ -223,7 +285,38 @@ public class Router {
 	// Forward link state message received to neighboring nodes
 	// based on broadcast algorithm used.
 	}
-	public synchronized void processUpdateNeighbor(){
+	
+	int addUpTo999(int num1, int num2)
+	{
+		if(num1+num2 >= INFINITE_LENGTH)
+		{
+			return INFINITE_LENGTH;
+		}
+		else
+		{
+			return (num1+num2);
+		}
+	}
+	
+	public synchronized void processUpdateNeighbor(LinkState state, int port){
+		
+		Socket socket;
+		DatagramSocket clientSocket;
+		DataOutputStream outputStream;
+		DatagramPacket sendPacket;
+		try {
+			socket = new Socket(this.peerip,port);
+			clientSocket = new DatagramSocket();
+			outputStream = new DataOutputStream(socket.getOutputStream());
+			sendPacket = new DatagramPacket(state.getBytes(),state.)
+			
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	
+		
+		
 	// Send node’s link state vector to neighboring nodes as link
 	// state message.
 	// Schedule task if Method-1 followed to implement recurring

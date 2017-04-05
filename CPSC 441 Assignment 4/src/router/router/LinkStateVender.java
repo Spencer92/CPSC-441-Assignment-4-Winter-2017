@@ -8,11 +8,15 @@ public class LinkStateVender extends TimerTask
 {
 	private Router router;
 	private DatagramSocket receivePacket;
+	private LinkState state;
+	private int port;
 	
-	public LinkStateVender(Router router, DatagramSocket clientSocket)
+	public LinkStateVender(Router router, DatagramSocket clientSocket, LinkState state, int port)
 	{
 		this.router = router;
 		this.receivePacket = clientSocket;
+		this.state = state;
+		this.port = port;
 	}
 	
 	
