@@ -20,10 +20,16 @@ public class LinkStateVender extends TimerTask
 	}
 	
 	
+	public LinkStateVender(Router router, LinkState state)
+	{
+		this.router = router;
+		this.state = state;
+	}
+	
 	@Override
 	public void run() {
 		
-		
+		router.processUpdateNeighbor(state);
 		// TODO Auto-generated method stub
 		
 	}
