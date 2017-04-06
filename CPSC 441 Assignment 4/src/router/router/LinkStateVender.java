@@ -10,6 +10,7 @@ public class LinkStateVender extends TimerTask
 	private DatagramSocket receivePacket;
 	private LinkState state;
 	private int port;
+	private int amountOfTimesSent;
 	
 	public LinkStateVender(Router router, DatagramSocket clientSocket, LinkState state, int port)
 	{
@@ -24,6 +25,12 @@ public class LinkStateVender extends TimerTask
 	{
 		this.router = router;
 		this.state = state;
+	}
+	
+	public LinkStateVender(Router router, int amountOfTimesSent)
+	{
+		this.router = router;
+		this.amountOfTimesSent = amountOfTimesSent;
 	}
 	
 	@Override

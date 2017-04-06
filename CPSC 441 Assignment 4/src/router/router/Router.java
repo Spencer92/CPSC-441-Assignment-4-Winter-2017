@@ -42,7 +42,7 @@ public class Router {
 	private DataInputStream inputStream;
 	private static final int MAX_BYTE_SIZE = 1000;
 	private int[] allNodesDistance;
-	private boolean[] allNodesAdjacent;
+	private boolean[] receivedRouterInfo;
 	private static final int MAX_NODES = 10;
 	LinkedList<LinkState> routers = new LinkedList<LinkState>();
 	private boolean end = false;
@@ -53,6 +53,8 @@ public class Router {
 	private int ports[];
 	private DatagramSocket[] clientSockets;
 	private Timer theTimer;
+	private int amountOfTimesSent = 0;
+	private static final int NEXT_ROUTER = 11;
 	
 	
 	/**
@@ -75,14 +77,14 @@ public class Router {
 		this.neighbourupdate = neighborupdate;
 		this.routeupdate = routeupdate;
 		this.allNodesDistance = new int[MAX_NODES];
-		this.allNodesAdjacent = new boolean[MAX_NODES];
+		this.receivedRouterInfo = new boolean[MAX_NODES];
 		this.origNodeDist = new int[MAX_NODES];
 		this.ports = new int[MAX_NODES];
 		
 		for(int i = 0; i < MAX_NODES; i++)
 		{
 			this.allNodesDistance[i] = 999;
-			this.allNodesAdjacent[i] = false;
+			this.receivedRouterInfo[i] = false;
 		}
 		this.allNodesDistance[routerid] = 0;
 
@@ -126,7 +128,7 @@ public class Router {
     		Timer[] timers;
     		int timerCount = 0;
     		this.theTimer = new Timer();
-    		
+    		int otherRouter;
     		
     		
     	
@@ -138,10 +140,12 @@ public class Router {
 				IPAddress = InetAddress.getByName(this.peerip);
     			
 				this.nodeInfo = new int[configFileInfo[0]][];
+				this.clientSockets = new DatagramSocket[configFileInfo[0]];
+				this.receivedRouterInfo = new boolean[configFileInfo[0]];
 				
 				for(int i = 0; i < this.nodeInfo.length; i++)
 				{
-					this.nodeInfo[i] = new int[this.nodeInfo.length+2];
+					this.nodeInfo[i] = new int[this.nodeInfo.length+1];
 				}
 				
 				for(int i = 0; i < this.nodeInfo.length; i++)
@@ -152,9 +156,28 @@ public class Router {
 					}
 				}
 				
+				for(int i = 0; i < this.clientSockets.length; i++)
+				{
+					this.clientSockets[i] = null;
+					this.receivedRouterInfo[i] = false;
+				}
 				
+				this.nodeInfo[this.routerid][this.routerid] = 0;
+				this.receivedRouterInfo[this.routerid] = true;
+				index += 2;
 				
+				while(index < configFileInfo.length)
+				{
+					otherRouter = configFileInfo[index]-'A';
+					this.receivedRouterInfo[otherRouter] = true;
+					this.nodeInfo[this.routerid][otherRouter] = configFileInfo[index+4];
+    				port = ((configFileInfo[index + 6]-'0')*1000) + ((configFileInfo[index+7]-'0')*100) + ((configFileInfo[index+8]-'0')*10) + (configFileInfo[index+9]-'0');
+    				this.clientSockets[otherRouter] = new DatagramSocket(port);
+    				
+    				index += NEXT_ROUTER;
+				}
 				
+				this.theTimer.scheduleAtFixedRate(new LinkStateVender(this,this.amountOfTimesSent), 0, 1000);
 				
 /*    			for(int i = 0; i < configFileInfo.length; i++)
     			{
@@ -238,8 +261,8 @@ public class Router {
     					timers[timerCount] = new Timer();
     					timers[timerCount].scheduleAtFixedRate(new LinkStateVender(this,clientSocket,connectors[timerCount],port), 0,1000);
     				}*/
-    				timerCount++;
-    				index += 13;    				
+ //   				timerCount++;
+ //   				index += 13;    				
  /*   			}
     			
     			
@@ -408,6 +431,36 @@ public class Router {
 	}
 	
 
+	
+	public synchronized void processUpdateNeighbor()
+	{
+		LinkState state;
+		DatagramPacket sendPacket;
+		this.nodeInfo[this.routerid][this.nodeInfo[this.routerid].length] = this.amountOfTimesSent;
+		this.amountOfTimesSent++;
+		
+		for(int i = 0; i < this.receivedRouterInfo.length; i++)
+		{
+			if(this.receivedRouterInfo[i])
+			{
+				for(int j = 0; j < this.clientSockets.length; j++)
+				{
+					if(this.clientSockets[j] != null)
+					{
+						state = new LinkState(this.routerid,i,this.nodeInfo[i]);
+						sendPacket = new DatagramPacket(state.getBytes(),state.getBytes().length,this.IPAddress,clientSockets[j].getPort());
+						try {
+							clientSockets[j].send(sendPacket);
+						} catch (IOException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+					}
+				}
+			}
+		}
+		
+	}
 	
 	public synchronized void processUpdateNeighbor(LinkState state)
 	{
