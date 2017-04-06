@@ -137,7 +137,26 @@ public class Router {
     			configFileInfo = Files.readAllBytes(path);
 				IPAddress = InetAddress.getByName(this.peerip);
     			
-    			for(int i = 0; i < configFileInfo.length; i++)
+				this.nodeInfo = new int[configFileInfo[0]][];
+				
+				for(int i = 0; i < this.nodeInfo.length; i++)
+				{
+					this.nodeInfo[i] = new int[this.nodeInfo.length+2];
+				}
+				
+				for(int i = 0; i < this.nodeInfo.length; i++)
+				{
+					for(int j = 0; j < this.nodeInfo[i].length; j++)
+					{
+						this.nodeInfo[i][j] = 999;
+					}
+				}
+				
+				
+				
+				
+				
+/*    			for(int i = 0; i < configFileInfo.length; i++)
     			{
     				System.out.print(configFileInfo[i] + " ");
     				byte[] convert = new byte[1];
@@ -160,13 +179,13 @@ public class Router {
     			
     			for(int i = 0; i < this.nodeInfo.length-1; i++)
     			{
-    				this.nodeInfo[i] = new int[this.nodeInfo.length-1];
+    				this.nodeInfo[i] = new int[this.nodeInfo.length];
     				this.nodeInfo[this.nodeInfo.length][i] = Integer.MIN_VALUE;
     			}
     			
     			
     			this.connectors = new LinkState[configFileInfo[0]];
-    			this.allNodesDistance = new int[configFileInfo[0] + 3];
+    			this.allNodesDistance = new int[configFileInfo[0] + 2];
     			this.allNodesAdjacent = new boolean[configFileInfo[0]];
     			this.allNodesDistance[this.allNodesDistance.length-2] = this.routerid;
     			this.allNodesDistance[this.allNodesDistance.length-1] = 0;
@@ -184,6 +203,10 @@ public class Router {
     			}
     			
     			
+    			while(index < configFileInfo.length)
+    			{
+    				
+    			}
     			
     			while(index < configFileInfo.length)
     			{
@@ -217,13 +240,13 @@ public class Router {
     				}*/
     				timerCount++;
     				index += 13;    				
-    			}
+ /*   			}
     			
     			
     			
     			
     			
-    			checkForReceivedInfo = 1;
+    			checkForReceivedInfo = 1;*/
     			
     			
 //    			segment = new Segment();
