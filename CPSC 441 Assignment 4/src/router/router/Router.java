@@ -56,6 +56,7 @@ public class Router {
 	private int amountOfTimesSent = 0;
 	private static final int NEXT_ROUTER = 11;
 	private int clientPortNumbers[];
+	private int routerDist[];
 	
 	
 	/**
@@ -191,7 +192,7 @@ public class Router {
 					System.out.println(configFileInfo[index]);
 					System.out.println(otherRouter);
 					this.receivedRouterInfo[otherRouter] = true;
-					this.nodeInfo[this.routerid][otherRouter] = configFileInfo[index+4];
+					this.nodeInfo[this.routerid][otherRouter] = configFileInfo[index+4]-'0';
     				port = ((configFileInfo[index + 6]-'0')*1000) + ((configFileInfo[index+7]-'0')*100) + ((configFileInfo[index+8]-'0')*10) + (configFileInfo[index+9]-'0');
     				System.out.println("Port is " + port);
     				System.out.println("router is " + otherRouter);
@@ -609,6 +610,45 @@ public class Router {
 	}
 	public synchronized void processUpdateRoute(){
 		
+		int size = 999;
+		int minNode = -1;
+		boolean usedNodes[] = new boolean[MAX_NODES];
+		
+		for(int i = 0; i < this.receivedRouterInfo.length; i++)
+		{
+			if(!this.receivedRouterInfo[i])
+			{
+				return;
+			}
+		}
+		
+		for(int i = 0; i < usedNodes.length; i++)
+		{
+			usedNodes[i] = false;
+		}
+		
+		usedNodes[this.routerid] = true;
+		
+		do
+		{
+			for(int i = 0; i < this.nodeInfo[this.routerid].length; i++)
+			{
+				if(this.nodeInfo[this.routerid][i] < size && !usedNodes[i])
+				{
+					size = this.nodeInfo[this.routerid][i];
+					minNode = i;
+				}
+
+			}
+			
+			for(int i = 0; i < this.nodeInfo[this.routerid].length-1 && i < this.nodeInfo[minNode].length-1; i++)
+			{
+				this.nodeInfo[this.routerid][i] = minimum(this.nodeInfo[this.routerid][i],
+												this.nodeInfo[this.routerid][minNode] + this.nodeInfo[minNode][i]);
+			}			
+			
+			
+		}while(allNodesUsed(usedNodes));
 		
 		
 		
@@ -619,6 +659,24 @@ public class Router {
 	// No => ignore the event.
 	// Schedule task if Method-1 followed to implement recurring
 	// timer task.
+	}
+	
+	private boolean allNodesUsed(boolean[] usedNodes)
+	{
+		for(int i = 0; i < usedNodes.length; i++)
+		{
+			if(!usedNodes[i])
+			{
+				return false;
+			}
+		}
+		
+		return true;
+	}
+	
+	private int minimum(int firstNum, int secondNum)
+	{
+		return 0;
 	}
 	
 	/* A simple test driver 
