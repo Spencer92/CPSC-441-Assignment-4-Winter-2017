@@ -57,6 +57,8 @@ public class Router {
 	private static final int NEXT_ROUTER = 11;
 	private int clientPortNumbers[];
 	private int routerDist[];
+	private Timer calcTimer;
+	
 	
 	
 	/**
@@ -130,6 +132,7 @@ public class Router {
     		Timer[] timers;
     		int timerCount = 0;
     		this.theTimer = new Timer();
+    		this.calcTimer = new Timer();
     		int otherRouter;
     		Thread aThread;
     		int numRouters;
@@ -207,6 +210,8 @@ public class Router {
 				aThread.start();
 				
 				this.theTimer.scheduleAtFixedRate(new LinkStateVender(this), 0, 1000);
+				
+				this.calcTimer.scheduleAtFixedRate(new MinimumDistanceCalculate(this), 10000, 10000);
 				
 /*    			for(int i = 0; i < configFileInfo.length; i++)
     			{
@@ -631,7 +636,7 @@ public class Router {
 		
 		do
 		{
-			for(int i = 0; i < this.nodeInfo[this.routerid].length; i++)
+			for(int i = 0; i < this.nodeInfo[this.routerid].length-1; i++)
 			{
 				if(this.nodeInfo[this.routerid][i] < size && !usedNodes[i])
 				{
@@ -640,6 +645,7 @@ public class Router {
 				}
 
 			}
+			usedNodes[minNode] = true;
 			
 			for(int i = 0; i < this.nodeInfo[this.routerid].length-1 && i < this.nodeInfo[minNode].length-1; i++)
 			{
@@ -648,7 +654,7 @@ public class Router {
 			}			
 			
 			
-		}while(allNodesUsed(usedNodes));
+		}while(!allNodesUsed(usedNodes));
 		
 		
 		
@@ -676,7 +682,14 @@ public class Router {
 	
 	private int minimum(int firstNum, int secondNum)
 	{
-		return 0;
+		if(firstNum < secondNum)
+		{
+			return firstNum;
+		}
+		else
+		{
+			return secondNum;
+		}
 	}
 	
 	/* A simple test driver 
