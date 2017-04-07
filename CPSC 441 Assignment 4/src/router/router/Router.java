@@ -58,6 +58,7 @@ public class Router {
 	private int clientPortNumbers[];
 	private int routerDist[];
 	private Timer calcTimer;
+	private int numRouters;
 	
 	
 	
@@ -135,7 +136,6 @@ public class Router {
     		this.calcTimer = new Timer();
     		int otherRouter;
     		Thread aThread;
-    		int numRouters;
     	
     		
     		try {
@@ -402,7 +402,12 @@ public class Router {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
+		try {
+			Thread.sleep(1000);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 /*		
 		for(index = 0; index < state.getCost().length-2; index++)
 		{
@@ -537,8 +542,8 @@ public class Router {
 						sendPacket = new DatagramPacket(state.getBytes(),state.getBytes().length,this.IPAddress,this.clientPortNumbers[j]);
 						try {
 							clientSocket.send(sendPacket);
-							System.out.println("Sent out socket " + clientSocket.getLocalPort());
-							System.out.println("Sent packet");
+//							System.out.println("Sent out socket " + clientSocket.getLocalPort());
+//							System.out.println("Sent packet");
 						} catch (IOException e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
@@ -546,11 +551,11 @@ public class Router {
 					}//if(this.clientPortNumbers[j] != 0)
 					else if(this.clientSockets[j] == null)
 					{
-						System.out.println("Socket " + j + " is null");
+//						System.out.println("Socket " + j + " is null");
 					}
 					else 
 					{
-						System.out.println("Port of " + j + " is " + this.clientSocket.getPort());
+//						System.out.println("Port of " + j + " is " + this.clientSocket.getPort());
 					}
 				}
 			}
@@ -615,14 +620,22 @@ public class Router {
 	}
 	public synchronized void processUpdateRoute(){
 		
+		System.out.println("Entered processUpdateRoute");
+		
 		int size = 999;
 		int minNode = -1;
-		boolean usedNodes[] = new boolean[MAX_NODES];
+		boolean usedNodes[] = new boolean[this.numRouters];
+
+		System.out.println(usedNodes.length + ": usedNodes.length");
+		System.out.println(this.numRouters + ": numRouters");
+		System.out.println(this.routerid + ": routerid");
+		
 		
 		for(int i = 0; i < this.receivedRouterInfo.length; i++)
 		{
 			if(!this.receivedRouterInfo[i])
 			{
+				System.out.println("Cant do calc yet");
 				return;
 			}
 		}
@@ -631,13 +644,15 @@ public class Router {
 		{
 			usedNodes[i] = false;
 		}
-		
+
+
 		usedNodes[this.routerid] = true;
 		
 		do
 		{
-			for(int i = 0; i < this.nodeInfo[this.routerid].length-1; i++)
+			for(int i = 0; i < usedNodes.length; i++)
 			{
+
 				if(this.nodeInfo[this.routerid][i] < size && !usedNodes[i])
 				{
 					size = this.nodeInfo[this.routerid][i];
@@ -645,18 +660,34 @@ public class Router {
 				}
 
 			}
+			System.out.println();
 			usedNodes[minNode] = true;
+			size = 999;
 			
-			for(int i = 0; i < this.nodeInfo[this.routerid].length-1 && i < this.nodeInfo[minNode].length-1; i++)
+			for(int i = 0; i < usedNodes.length; i++)
 			{
-				this.nodeInfo[this.routerid][i] = minimum(this.nodeInfo[this.routerid][i],
-												this.nodeInfo[this.routerid][minNode] + this.nodeInfo[minNode][i]);
+
+					this.nodeInfo[this.routerid][i] = minimum(this.nodeInfo[this.routerid][i],
+													this.nodeInfo[this.routerid][minNode] + this.nodeInfo[minNode][i]);
+
 			}			
 			
+			for(int i = 0; i < usedNodes.length; i++)
+			{
+				System.out.print(usedNodes[i] + " ");
+			}
+			System.out.println();
+			
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 			
 		}while(!allNodesUsed(usedNodes));
 		
-		
+		System.out.println("About to leave updateRoute");
 		
 		
 	// If link state vectors of all nodes received,
