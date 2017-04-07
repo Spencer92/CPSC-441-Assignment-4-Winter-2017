@@ -129,8 +129,8 @@ public class Router {
     		int timerCount = 0;
     		this.theTimer = new Timer();
     		int otherRouter;
-    		
-    		
+    		Thread aThread;
+    		int numRouters;
     	
     		
     		try {
@@ -139,13 +139,18 @@ public class Router {
     			configFileInfo = Files.readAllBytes(path);
 				IPAddress = InetAddress.getByName(this.peerip);
     			
-				this.nodeInfo = new int[configFileInfo[0]][];
-				this.clientSockets = new DatagramSocket[configFileInfo[0]];
-				this.receivedRouterInfo = new boolean[configFileInfo[0]];
+				
+				numRouters = configFileInfo[0] - '0';
+				this.nodeInfo = new int[numRouters][];
+				this.clientSockets = new DatagramSocket[numRouters];
+				this.receivedRouterInfo = new boolean[numRouters];
+				System.out.println(configFileInfo[0]);
+				
 				
 				for(int i = 0; i < this.nodeInfo.length; i++)
 				{
 					this.nodeInfo[i] = new int[this.nodeInfo.length+1];
+					System.out.println("this.nodeInfo[" + i + " ].length = " + this.nodeInfo[i].length);
 				}
 				
 				for(int i = 0; i < this.nodeInfo.length; i++)
@@ -172,12 +177,18 @@ public class Router {
 					this.receivedRouterInfo[otherRouter] = true;
 					this.nodeInfo[this.routerid][otherRouter] = configFileInfo[index+4];
     				port = ((configFileInfo[index + 6]-'0')*1000) + ((configFileInfo[index+7]-'0')*100) + ((configFileInfo[index+8]-'0')*10) + (configFileInfo[index+9]-'0');
+    				System.out.println("Port is " + port);
+    				System.out.println("router is " + otherRouter);
     				this.clientSockets[otherRouter] = new DatagramSocket(port);
+    				System.out.println("Port of router " + otherRouter + " is " + this.clientSockets[otherRouter].getLocalPort());
     				
     				index += NEXT_ROUTER;
 				}
 				
-				this.theTimer.scheduleAtFixedRate(new LinkStateVender(this,this.amountOfTimesSent), 0, 1000);
+				
+				
+				
+				this.theTimer.scheduleAtFixedRate(new LinkStateVender(this), 0, 1000);
 				
 /*    			for(int i = 0; i < configFileInfo.length; i++)
     			{
@@ -317,7 +328,45 @@ public class Router {
 		boolean infiniteLength = true;
 		int [] distUpdate = state.cost;
 		int index;
+	
 		
+		for(index = 0; index < state.getCost().length; index++)
+		{
+			if(state.getCost()[index] == 0)
+			{
+				break;
+			}
+		}
+		
+		System.out.print("Received [");
+		System.out.print(state.getCost()[0]);
+		for(int i = 1; i < state.getCost().length; i++)
+		{
+			System.out.print(", " + state.getCost()[i]);
+		}
+		System.out.println("] from " + index);
+		
+		
+		if(this.nodeInfo[index][this.nodeInfo[index].length-1] == state.getCost()[state.getCost().length-1])
+		{
+			return;
+		}
+		
+		this.receivedRouterInfo[index] = true;
+		
+		try {
+			this.nodeInfo[index] = copyArray(this.nodeInfo[index],state.getCost());
+			this.theTimer.cancel();
+			this.theTimer = new Timer();
+			this.theTimer.scheduleAtFixedRate(new LinkStateVender(this), 0, 1000);
+			
+			
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+/*		
 		for(index = 0; index < state.getCost().length-2; index++)
 		{
 			if(state.getCost()[index] == 0)
@@ -347,7 +396,7 @@ public class Router {
 			}
 			
 		}
-		
+		*/
 		
 		
 /*		
@@ -436,7 +485,7 @@ public class Router {
 	{
 		LinkState state;
 		DatagramPacket sendPacket;
-		this.nodeInfo[this.routerid][this.nodeInfo[this.routerid].length] = this.amountOfTimesSent;
+		this.nodeInfo[this.routerid][this.nodeInfo[this.routerid].length-1] = this.amountOfTimesSent;
 		this.amountOfTimesSent++;
 		
 		for(int i = 0; i < this.receivedRouterInfo.length; i++)
@@ -445,18 +494,31 @@ public class Router {
 			{
 				for(int j = 0; j < this.clientSockets.length; j++)
 				{
-					if(this.clientSockets[j] != null)
+					if(this.clientSockets[j] != null && this.clientSockets[j].getLocalPort() != -1)
 					{
 						state = new LinkState(this.routerid,i,this.nodeInfo[i]);
-						sendPacket = new DatagramPacket(state.getBytes(),state.getBytes().length,this.IPAddress,clientSockets[j].getPort());
+						sendPacket = new DatagramPacket(state.getBytes(),state.getBytes().length,this.IPAddress,clientSockets[j].getLocalPort());
 						try {
 							clientSockets[j].send(sendPacket);
+							System.out.println("Sent packet");
 						} catch (IOException e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
 					}
+					else if(this.clientSockets[j] == null)
+					{
+						System.out.println("Socket " + j + " is null");
+					}
+					else 
+					{
+						System.out.println("Port of " + j + " is " + this.clientSockets[j].getPort());
+					}
 				}
+			}
+			else
+			{
+				System.out.println("No router info for " + i);
 			}
 		}
 		
@@ -514,6 +576,11 @@ public class Router {
 	// timer task.
 	}
 	public synchronized void processUpdateRoute(){
+		
+		
+		
+		
+		
 	// If link state vectors of all nodes received,
 	// Yes => Compute route info based on Dijkstra’s algorithm
 	// and print as per the output format.

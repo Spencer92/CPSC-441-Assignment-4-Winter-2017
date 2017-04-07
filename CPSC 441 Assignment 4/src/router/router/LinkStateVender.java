@@ -33,10 +33,16 @@ public class LinkStateVender extends TimerTask
 		this.amountOfTimesSent = amountOfTimesSent;
 	}
 	
+	public LinkStateVender(Router router)
+	{
+		this.router = router;
+	}
+	
 	@Override
 	public void run() {
-		
-		router.processUpdateNeighbor(state);
+		System.out.println("Vending");
+//		router.processUpdateNeighbor(state);
+		router.processUpdateNeighbor();
 		// TODO Auto-generated method stub
 		
 	}
