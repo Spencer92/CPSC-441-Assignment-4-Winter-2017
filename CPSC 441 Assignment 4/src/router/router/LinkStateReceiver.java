@@ -27,9 +27,10 @@ public class LinkStateReceiver implements Runnable
 			try {
 				for(int i = 0; i < clientSocket.length; i++)
 				{
-					if(clientSocket[i] != null)
+					if(clientSocket[i] != null && i != this.router.getRouterId())
 					{
 						clientSocket[i].receive(receivePacket);
+						System.out.println(i == this.router.getRouterId());
 						router.processUpDateDS(receivePacket);
 					}
 				}

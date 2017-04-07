@@ -323,6 +323,11 @@ public class Router {
 		return this.end;
 	}
 	
+	public int getRouterId()
+	{
+		return this.routerid;
+	}
+	
 	public synchronized void processUpDateDS(DatagramPacket receivepacket)
 	{
 		LinkState state = new LinkState(receivepacket);
@@ -338,6 +343,10 @@ public class Router {
 				break;
 			}
 		}
+		if(index == state.getCost().length || index == this.routerid)
+		{
+			return;
+		}
 		
 		System.out.print("Received [");
 		System.out.print(state.getCost()[0]);
@@ -348,14 +357,18 @@ public class Router {
 		System.out.println("] from " + index);
 		
 		
-		if(this.nodeInfo[index][this.nodeInfo[index].length-1] == state.getCost()[state.getCost().length-1])
+		if(this.nodeInfo[index][this.nodeInfo[index].length-1] == 
+				state.getCost()[state.getCost().length-1])
 		{
 			return;
 		}
 		
+		
+		
 		this.receivedRouterInfo[index] = true;
 		
 		try {
+			System.out.println("Updating table: " + index);
 			this.nodeInfo[index] = copyArray(this.nodeInfo[index],state.getCost());
 			this.theTimer.cancel();
 			this.theTimer = new Timer();
