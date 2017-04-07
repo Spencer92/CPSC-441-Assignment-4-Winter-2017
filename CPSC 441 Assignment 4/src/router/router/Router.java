@@ -186,7 +186,8 @@ public class Router {
 				}
 				
 				
-				
+				aThread = new Thread(new LinkStateReceiver(this,this.clientSockets));
+				aThread.start();
 				
 				this.theTimer.scheduleAtFixedRate(new LinkStateVender(this), 0, 1000);
 				
