@@ -7,9 +7,9 @@ import java.net.DatagramSocket;
 public class LinkStateReceiver implements Runnable
 {
 	Router router;
-	DatagramSocket[] clientSocket;
+	DatagramSocket clientSocket;
 	
-	public LinkStateReceiver(Router router, DatagramSocket[] clientSocket)
+	public LinkStateReceiver(Router router, DatagramSocket clientSocket)
 	{
 		this.router = router;
 		this.clientSocket = clientSocket;
@@ -25,15 +25,9 @@ public class LinkStateReceiver implements Runnable
 			DatagramPacket receivePacket = new DatagramPacket(linkStateInfo,linkStateInfo.length);	
 			
 			try {
-				for(int i = 0; i < clientSocket.length; i++)
-				{
-					if(clientSocket[i] != null && i != this.router.getRouterId())
-					{
-						clientSocket[i].receive(receivePacket);
-						System.out.println(i == this.router.getRouterId());
+						clientSocket.receive(receivePacket);
+						System.out.println(this.router.getRouterId());
 						router.processUpDateDS(receivePacket);
-					}
-				}
 			} catch (IOException e) {
 				
 				if(router.isEnd())

@@ -55,6 +55,7 @@ public class Router {
 	private Timer theTimer;
 	private int amountOfTimesSent = 0;
 	private static final int NEXT_ROUTER = 11;
+	private int clientPortNumbers[];
 	
 	
 	/**
@@ -144,7 +145,9 @@ public class Router {
 				this.nodeInfo = new int[numRouters][];
 				this.clientSockets = new DatagramSocket[numRouters];
 				this.receivedRouterInfo = new boolean[numRouters];
+				this.clientPortNumbers = new int[numRouters];
 				System.out.println(configFileInfo[0]);
+				clientSocket = new DatagramSocket(this.port);
 				
 				
 				for(int i = 0; i < this.nodeInfo.length; i++)
@@ -163,30 +166,43 @@ public class Router {
 				
 				for(int i = 0; i < this.clientSockets.length; i++)
 				{
-					this.clientSockets[i] = null;
+					this.clientPortNumbers[i] = 0;
 					this.receivedRouterInfo[i] = false;
 				}
 				
 				this.nodeInfo[this.routerid][this.routerid] = 0;
 				this.receivedRouterInfo[this.routerid] = true;
+				this.clientPortNumbers[this.routerid] = this.port;
 				index += 2;
 				
 				while(index < configFileInfo.length)
 				{
+					if(configFileInfo[index] == 10)
+					{
+						index++;
+						if(index >= configFileInfo.length)
+						{
+							break;
+						}
+					}
 					otherRouter = configFileInfo[index]-'A';
+					System.out.println(configFileInfo[index-2]);
+					System.out.println(configFileInfo[index-1]);
+					System.out.println(configFileInfo[index]);
+					System.out.println(otherRouter);
 					this.receivedRouterInfo[otherRouter] = true;
 					this.nodeInfo[this.routerid][otherRouter] = configFileInfo[index+4];
     				port = ((configFileInfo[index + 6]-'0')*1000) + ((configFileInfo[index+7]-'0')*100) + ((configFileInfo[index+8]-'0')*10) + (configFileInfo[index+9]-'0');
     				System.out.println("Port is " + port);
     				System.out.println("router is " + otherRouter);
-    				this.clientSockets[otherRouter] = new DatagramSocket(port);
-    				System.out.println("Port of router " + otherRouter + " is " + this.clientSockets[otherRouter].getLocalPort());
+    				this.clientPortNumbers[otherRouter] = port;
+    				System.out.println("Port of router " + otherRouter + " is " + this.clientPortNumbers[otherRouter]);
     				
     				index += NEXT_ROUTER;
 				}
 				
 				
-				aThread = new Thread(new LinkStateReceiver(this,this.clientSockets));
+				aThread = new Thread(new LinkStateReceiver(this,this.clientSocket));
 				aThread.start();
 				
 				this.theTimer.scheduleAtFixedRate(new LinkStateVender(this), 0, 1000);
@@ -509,25 +525,26 @@ public class Router {
 			{
 				for(int j = 0; j < this.clientSockets.length; j++)
 				{
-					if(this.clientSockets[j] != null && this.clientSockets[j].getLocalPort() != -1)
+					if(this.clientPortNumbers[j] != 0)
 					{
 						state = new LinkState(this.routerid,i,this.nodeInfo[i]);
-						sendPacket = new DatagramPacket(state.getBytes(),state.getBytes().length,this.IPAddress,clientSockets[j].getLocalPort());
+						sendPacket = new DatagramPacket(state.getBytes(),state.getBytes().length,this.IPAddress,this.clientPortNumbers[j]);
 						try {
-							clientSockets[j].send(sendPacket);
+							clientSocket.send(sendPacket);
+							System.out.println("Sent out socket " + clientSocket.getLocalPort());
 							System.out.println("Sent packet");
 						} catch (IOException e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
-					}
+					}//if(this.clientPortNumbers[j] != 0)
 					else if(this.clientSockets[j] == null)
 					{
 						System.out.println("Socket " + j + " is null");
 					}
 					else 
 					{
-						System.out.println("Port of " + j + " is " + this.clientSockets[j].getPort());
+						System.out.println("Port of " + j + " is " + this.clientSocket.getPort());
 					}
 				}
 			}
