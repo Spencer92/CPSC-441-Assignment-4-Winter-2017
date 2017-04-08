@@ -402,12 +402,12 @@ public class Router {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		try {
+/*		try {
 			Thread.sleep(1000);
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}
+		}*/
 /*		
 		for(index = 0; index < state.getCost().length-2; index++)
 		{
@@ -529,6 +529,10 @@ public class Router {
 		DatagramPacket sendPacket;
 		this.nodeInfo[this.routerid][this.nodeInfo[this.routerid].length-1] = this.amountOfTimesSent;
 		this.amountOfTimesSent++;
+		if(this.amountOfTimesSent > 999)
+		{
+			this.amountOfTimesSent = 0;
+		}
 		
 		for(int i = 0; i < this.receivedRouterInfo.length; i++)
 		{
@@ -666,9 +670,19 @@ public class Router {
 			
 			for(int i = 0; i < usedNodes.length; i++)
 			{
-
-					this.nodeInfo[this.routerid][i] = minimum(this.nodeInfo[this.routerid][i],
-													this.nodeInfo[this.routerid][minNode] + this.nodeInfo[minNode][i]);
+					
+				System.out.println("this.nodeInfo[this.routerid][" + i + "] = " + this.nodeInfo[this.routerid][i]);
+				System.out.println("this.nodeInfo[this.routerid][" + minNode + "] = " + this.nodeInfo[this.routerid][minNode]);
+				System.out.println("this.nodeInfo[" + minNode + "][" + i + "] = " + this.nodeInfo[minNode][i]);
+				this.nodeInfo[this.routerid][i] = minimum(this.nodeInfo[this.routerid][i],
+						this.nodeInfo[this.routerid][minNode] + this.nodeInfo[minNode][i]);
+				System.out.print("New route for router");
+				
+				for(int j = 0; j < usedNodes.length; j++)
+				{
+					System.out.print(this.nodeInfo[this.routerid][j] + " ");
+				}
+				System.out.println();
 
 			}			
 			
@@ -688,6 +702,12 @@ public class Router {
 		}while(!allNodesUsed(usedNodes));
 		
 		System.out.println("About to leave updateRoute");
+		
+		this.theTimer.cancel();
+		
+		this.theTimer = new Timer();
+		this.theTimer.scheduleAtFixedRate(new LinkStateVender(this), 0, 1000);
+		
 		
 		
 	// If link state vectors of all nodes received,
@@ -715,10 +735,12 @@ public class Router {
 	{
 		if(firstNum < secondNum)
 		{
+			System.out.println(firstNum + " is smaller than " + secondNum);
 			return firstNum;
 		}
 		else
 		{
+			System.out.println(secondNum + " is smaller than " + firstNum);
 			return secondNum;
 		}
 	}
