@@ -378,6 +378,10 @@ public class Router {
 			}
 		}
 
+		if(state.getCost()[state.getCost().length-2] == this.routerid || state.getCost()[this.routerid] == 0)
+		{
+			return;
+		}
 
 		
 		System.out.print("Received [");
@@ -406,7 +410,6 @@ public class Router {
 		try {
 			System.out.println("Updating table: " + index);
 			this.nodeInfo[index] = copyArray(this.nodeInfo[index],state.getCost());
-			this.nodeInfo[index][this.nodeInfo.length-2] = this.routerid;
 			
 			this.theTimer.cancel();
 			this.theTimer = new Timer();
@@ -542,6 +545,7 @@ public class Router {
 	{
 		LinkState state;
 		DatagramPacket sendPacket;
+		int preSendInfo[];
 		this.nodeInfo[this.routerid][this.nodeInfo[this.routerid].length-1] = this.amountOfTimesSent;
 		this.amountOfTimesSent++;
 		if(this.amountOfTimesSent > 999)
@@ -557,7 +561,13 @@ public class Router {
 				{
 					if(this.clientPortNumbers[j] != 0)
 					{
-						state = new LinkState(this.routerid,i,this.nodeInfo[i]);
+						preSendInfo = new int[this.nodeInfo[i].length];
+						for(int k = 0; k < preSendInfo.length; k++)
+						{
+							preSendInfo[k] = this.nodeInfo[i][k];
+						}
+						preSendInfo[preSendInfo.length-2] = this.routerid;
+						state = new LinkState(this.routerid,i,preSendInfo);
 						sendPacket = new DatagramPacket(state.getBytes(),state.getBytes().length,this.IPAddress,this.clientPortNumbers[j]);
 						try {
 							clientSocket.send(sendPacket);
@@ -689,15 +699,25 @@ public class Router {
 				System.out.println("this.nodeInfo[this.routerid][" + i + "] = " + this.nodeInfo[this.routerid][i]);
 				System.out.println("this.nodeInfo[this.routerid][" + minNode + "] = " + this.nodeInfo[this.routerid][minNode]);
 				System.out.println("this.nodeInfo[" + minNode + "][" + i + "] = " + this.nodeInfo[minNode][i]);
+
+				
+				
+				
 				this.nodeInfo[this.routerid][i] = minimum(this.nodeInfo[this.routerid][i],
 						this.nodeInfo[this.routerid][minNode] + this.nodeInfo[minNode][i]);
 				
 				if(this.nodeInfo[this.routerid][i] < this.closestRouters[i])
 				{
 					this.closestRouters[i] = this.nodeInfo[minNode][this.nodeInfo[minNode].length-2];
+					System.out.println("Updated closest routers: ");
+					for(int k = 0; k < this.closestRouters.length; k++)
+					{
+						System.out.print(this.closestRouters[k] + " ");
+					}
+					System.out.println();
 				}
 				
-				System.out.print("New route for router");
+				System.out.print("New route for router: ");
 				
 				for(int j = 0; j < usedNodes.length; j++)
 				{
@@ -716,7 +736,7 @@ public class Router {
 			
 			for(int i = 0; i < this.closestRouters.length; i++)
 			{
-				System.out.print(this.closestRouters[i]);
+				System.out.print(this.closestRouters[i] + " ");
 			}
 			System.out.println();
 			
@@ -763,12 +783,12 @@ public class Router {
 	{
 		if(firstNum < secondNum)
 		{
-//			System.out.println(firstNum + " is smaller than " + secondNum);
+			System.out.println(firstNum + " is smaller than " + secondNum);
 			return firstNum;
 		}
 		else
 		{
-//			System.out.println(secondNum + " is smaller than " + firstNum);
+			System.out.println(secondNum + " is smaller than " + firstNum);
 			return secondNum;
 		}
 	}
