@@ -2,6 +2,13 @@ package router.router;
 
 import java.util.TimerTask;
 
+/**
+ * 
+ * Allows processUpdateRoute() to run in Router
+ *
+ *
+ */
+
 public class MinimumDistanceCalculate extends TimerTask
 {
 	Router router;

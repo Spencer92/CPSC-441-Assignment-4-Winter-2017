@@ -391,6 +391,11 @@ public class Router {
 	}
 	
 	/**
+	 * ProcessUpdateRoute
+	 * 
+	 * This is where dijkstra's algorithm is implemented
+	 * 
+	 * Which takes the minimum distance between all possible paths
 	 *
 	 */
 
@@ -401,7 +406,8 @@ public class Router {
 		boolean usedNodes[] = new boolean[this.numRouters];
 
 		
-		
+		//If not all of the router information
+		//has been received, do nothing
 		for(int i = 0; i < this.receivedRouterInfo.length; i++)
 		{
 			if(!this.receivedRouterInfo[i])
@@ -410,6 +416,10 @@ public class Router {
 			}
 		}
 		
+		//This is used to simulate N'
+		//If any nodes are in N', then
+		//The minimum for that run has 
+		//already been reached
 		for(int i = 0; i < usedNodes.length; i++)
 		{
 			usedNodes[i] = false;
@@ -423,6 +433,7 @@ public class Router {
 			for(int i = 0; i < usedNodes.length; i++)
 			{
 
+				//Get the minimum node
 				if(this.nodeInfo[this.routerid][i] < size && !usedNodes[i])
 				{
 					size = this.nodeInfo[this.routerid][i];
@@ -436,9 +447,14 @@ public class Router {
 			
 			for(int i = 0; i < usedNodes.length; i++)
 			{
+				
+				//Equivalent to D(v) = min(D(v), D(w)+c(w,v))
 				this.nodeInfo[this.routerid][i] = minimum(this.nodeInfo[this.routerid][i],
 						this.nodeInfo[this.routerid][minNode] + this.nodeInfo[minNode][i]);
 				
+				
+				//This is where the closest routers
+				//Would be shown, but it doesn't work
 				if(this.nodeInfo[this.routerid][i] < this.closestRouters[i])
 				{
 					this.closestRouters[i] = this.nodeInfo[minNode][this.nodeInfo[minNode].length-2];
@@ -452,6 +468,7 @@ public class Router {
 		}while(!allNodesUsed(usedNodes));
 		
 		
+		//Display the info
     	System.out.println("Routing Info");
     	System.out.println("RouterID \t Distance");
     	for(int i = 0; i < this.numRouters; i++)
@@ -475,6 +492,18 @@ public class Router {
 	// timer task.
 	}
 	
+	
+	/**
+	 * AllNodesUsed
+	 * 
+	 * Uses an array to check if all the values are true
+	 * 
+	 * 
+	 * @param usedNodes The information about whether the node has
+	 * 					been processes
+	 * @return true if all nodes have been processes
+	 * 		   false otherwise
+	 */
 	private boolean allNodesUsed(boolean[] usedNodes)
 	{
 		for(int i = 0; i < usedNodes.length; i++)
@@ -487,6 +516,16 @@ public class Router {
 		
 		return true;
 	}
+	
+	/**
+	 * Minimum
+	 * 
+	 * finds the smaller number
+	 * 
+	 * @param firstNum The first number
+	 * @param secondNum The second number
+	 * @return the smaller number
+	 */
 	
 	private int minimum(int firstNum, int secondNum)
 	{

@@ -1,8 +1,12 @@
 package router.router;
 
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
 import java.util.TimerTask;
+
+/**
+ * 
+ * allows processUpdateNeighbour to run
+ *
+ */
 
 public class LinkStateVender extends TimerTask
 {

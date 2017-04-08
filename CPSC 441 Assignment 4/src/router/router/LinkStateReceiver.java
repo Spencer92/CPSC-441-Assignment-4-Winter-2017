@@ -4,6 +4,13 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 
+/**
+ * 
+ * Checks for any received data,
+ * then calls processUpDateDS to process the data
+ *
+ */
+
 public class LinkStateReceiver implements Runnable
 {
 	Router router;
