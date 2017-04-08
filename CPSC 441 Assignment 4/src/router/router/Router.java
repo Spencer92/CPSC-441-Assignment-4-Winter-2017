@@ -27,9 +27,6 @@ import java.util.Timer;
  */
 public class Router {
 
- 	private int numNodes;
-	private int[] prev;
-	private int[] distancevector;
 	private String peerip;
 	private int routerid;
 	private int port;
@@ -38,25 +35,17 @@ public class Router {
 	private int routeupdate;
 	private DatagramSocket clientSocket;
 	private InetAddress IPAddress;
-//	private DataOutputStream outputStream;
-//	private DataInputStream inputStream;
-	private static final int MAX_BYTE_SIZE = 1000;
 	private int[] allNodesDistance;
 	private boolean[] receivedRouterInfo;
 	private static final int MAX_NODES = 10;
-//	LinkedList<LinkState> routers = new LinkedList<LinkState>();
 	private boolean end = false;
 	private static final int INFINITE_LENGTH = 999;
-//	private int [] origNodeDist;
 	private int [][] nodeInfo;
-//	private LinkState [] connectors;
-//	private int ports[];
-	private DatagramSocket[] clientSockets;
+//	private DatagramSocket[] clientSockets;
 	private Timer theTimer;
 	private int amountOfTimesSent = 0;
 	private static final int NEXT_ROUTER = 11;
 	private int clientPortNumbers[];
-//	private int routerDist[];
 	private Timer calcTimer;
 	private int numRouters;
 	private int[] closestRouters;
@@ -84,8 +73,6 @@ public class Router {
 		this.routeupdate = routeupdate;
 		this.allNodesDistance = new int[MAX_NODES];
 		this.receivedRouterInfo = new boolean[MAX_NODES];
-//		this.origNodeDist = new int[MAX_NODES];
-//		this.ports = new int[MAX_NODES];
 		
 		for(int i = 0; i < MAX_NODES; i++)
 		{
@@ -108,26 +95,11 @@ public class Router {
 	  	/**** You may use the follwing piece of code to print routing table info *******/
         	System.out.println("Routing Info");
         	System.out.println("RouterID \t Distance \t Prev RouterID");
-        	for(int i = 0; i < numNodes; i++)
-          	{
-          		System.out.println(i + "\t\t   " + distancevector[i] +  "\t\t\t" +  prev[i]);
-          	}
         	
         	Path path = Paths.get(this.configfile);
-//    		byte [] fileByteInfo = null;
-//    		Socket socket = null;
-//    		byte checkForReceivedInfo = Byte.MIN_VALUE;
-//    		byte [] dataToSend = new byte[MAX_BYTE_SIZE];
     		byte [] configFileInfo = null;
-//    		int indexFileInfo;
-//    		int indexSender;
-//    		int seqNum = 0;
     		int index = 0;
-//    		int routerDist;
     		int port;
-//    		LinkStateReceiver receiver;
-//    		Timer[] timers;
-//    		int timerCount = 0;
     		this.theTimer = new Timer();
     		this.calcTimer = new Timer();
     		int otherRouter;
@@ -141,37 +113,55 @@ public class Router {
 				
 				numRouters = configFileInfo[0] - '0';
 				this.nodeInfo = new int[numRouters][];
-				this.clientSockets = new DatagramSocket[numRouters];
+//				this.clientSockets = new DatagramSocket[numRouters];
 				this.receivedRouterInfo = new boolean[numRouters];
 				this.clientPortNumbers = new int[numRouters];
 				this.closestRouters = new int[numRouters];
 				clientSocket = new DatagramSocket(this.port);
 				
 				
+				
+				//The purpose of this was to get the routers
+				//that were the closest, couldn't get it
+				//to work, however
 				for(int i = 0; i < this.closestRouters.length; i++)
 				{
 					this.closestRouters[i] = 999;
 				}
 				
+				//This was to initialize the array that carries the 
+				//array. The reason its two added to the array
+				//is to carry what sent out the array,
+				//and how many times the information was sent out
 				for(int i = 0; i < this.nodeInfo.length; i++)
 				{
 					this.nodeInfo[i] = new int[this.nodeInfo.length+2];
 				}
 				
+				
+				//Assume that there is an infinite amount of length between the
+				//nodes
 				for(int i = 0; i < this.nodeInfo.length; i++)
 				{
 					for(int j = 0; j < this.nodeInfo[i].length; j++)
 					{
-						this.nodeInfo[i][j] = 999;
+						this.nodeInfo[i][j] = INFINITE_LENGTH;
 					}
 				}
 				
-				for(int i = 0; i < this.clientSockets.length; i++)
+				
+				//Initially no ports or router info would
+				//be known or received
+				for(int i = 0; i < this.clientPortNumbers.length; i++)
 				{
 					this.clientPortNumbers[i] = 0;
 					this.receivedRouterInfo[i] = false;
 				}
 				
+				
+				//When sending out what the node knows,
+				//Specify that it was this node that originally
+				//sent it
 				for(int i = 0; i < this.nodeInfo.length; i++)
 				{
 					this.nodeInfo[i][this.nodeInfo[i].length-2] = this.routerid;
@@ -184,6 +174,7 @@ public class Router {
 				
 				while(index < configFileInfo.length)
 				{
+					//In case there is a line feed
 					if(configFileInfo[index] == 10)
 					{
 						index++;
@@ -192,15 +183,19 @@ public class Router {
 							break;
 						}
 					}
+					
+					//otherRouter is the router that is currently being read
 					otherRouter = configFileInfo[index]-'A';
 					this.receivedRouterInfo[otherRouter] = true;
 					this.nodeInfo[this.routerid][otherRouter] = configFileInfo[index+4]-'0';
     				port = ((configFileInfo[index + 6]-'0')*1000) + ((configFileInfo[index+7]-'0')*100) + ((configFileInfo[index+8]-'0')*10) + (configFileInfo[index+9]-'0');
      				this.clientPortNumbers[otherRouter] = port;    				
     				index += NEXT_ROUTER;
-				}
+				}//while(index < configFileInfo.length)
 				
 				
+				
+				//Start the threads that need to send and receive
 				aThread = new Thread(new LinkStateReceiver(this,this.clientSocket));
 				aThread.start();
 				
@@ -229,14 +224,22 @@ public class Router {
 		return this.routerid;
 	}
 	
+	
+	/**
+	 * 
+	 * Receives a packet from another router, and processes it
+	 * 
+	 * @param receivepacket The packet that is to be received
+	 */
 	public synchronized void processUpDateDS(DatagramPacket receivepacket)
 	{
 		LinkState state = new LinkState(receivepacket);
-//		boolean infiniteLength = true;
-//		int [] distUpdate = state.cost;
 		int index;
 	
 		
+		//Find out where the node originated
+		//If it is zero than that's where the information
+		//originated
 		for(index = 0; index < state.getCost().length; index++)
 		{
 			if(state.getCost()[index] == 0)
@@ -244,19 +247,23 @@ public class Router {
 				break;
 			}
 		}
+		
+		
 
+		
+	
+		//If the information originated here,
+		//The array is out of bounds
+		//Or it already received the information being sent
+		//Do nothing
 		if(state.getCost()[state.getCost().length-2] == this.routerid || state.getCost()[this.routerid] == 0)
 		{
 			return;
 		}
-
-		
-
 		if(index >= this.nodeInfo.length || index == this.routerid)
 		{
 			return;
 		}
-		
 		if(this.nodeInfo[index][this.nodeInfo[index].length-2] == 
 				state.getCost()[state.getCost().length-1])
 		{
@@ -266,6 +273,9 @@ public class Router {
 		
 		
 		this.receivedRouterInfo[index] = true;
+		
+		//Copy the array contents
+		//and update the timer with the new info
 		
 		try {
 			this.nodeInfo[index] = copyArray(this.nodeInfo[index],state.getCost());
@@ -287,6 +297,18 @@ public class Router {
 	}
 	
 	
+	/**
+	 * CopyArray
+	 * 
+	 * Copies the array
+	 * Used to make 2d array copying more bearable
+	 * 
+	 * @param arrayOne The array to be copied to
+	 * @param arrayTwo The array to copy
+	 * @return the copied array
+	 * @throws Exception The arrays are different sizes
+	 */
+	
 	private int[] copyArray(int[] arrayOne, int[] arrayTwo) throws Exception
 	{
 		int[] newArray = new int[arrayOne.length];
@@ -303,28 +325,28 @@ public class Router {
 			throw new Exception("Arrays different size");
 		}
 	}
-	
-	int addUpTo999(int num1, int num2)
-	{
-		if(num1+num2 >= INFINITE_LENGTH)
-		{
-			return INFINITE_LENGTH;
-		}
-		else
-		{
-			return (num1+num2);
-		}
-	}
-	
 
+	
+	/**
+	 * ProcessUpdateNeighbor
+	 * 
+	 * Takes the information got from any of the routers, and
+	 * forwards it to all of its neighbours
+	 * 
+	 */
 	
 	public synchronized void processUpdateNeighbor()
 	{
 		LinkState state;
 		DatagramPacket sendPacket;
 		int preSendInfo[];
+		
+		//Where the amount of times sent is placed in the array
 		this.nodeInfo[this.routerid][this.nodeInfo[this.routerid].length-1] = this.amountOfTimesSent;
+
 		this.amountOfTimesSent++;
+		
+		//Just so the numbers don't get absurdly high
 		if(this.amountOfTimesSent > 999)
 		{
 			this.amountOfTimesSent = 0;
@@ -332,12 +354,20 @@ public class Router {
 		
 		for(int i = 0; i < this.receivedRouterInfo.length; i++)
 		{
+			
+
 			if(this.receivedRouterInfo[i])
 			{
-				for(int j = 0; j < this.clientSockets.length; j++)
+				for(int j = 0; j < this.clientPortNumbers.length; j++)
 				{
+					//If the node is connected, then it should have a port number
 					if(this.clientPortNumbers[j] != 0)
 					{
+						
+						//A new array needs to be created in
+						//Order for the information of 
+						//what router sent the information
+						//to be preserved
 						preSendInfo = new int[this.nodeInfo[i].length];
 						for(int k = 0; k < preSendInfo.length; k++)
 						{
@@ -354,13 +384,15 @@ public class Router {
 						}
 					}//if(this.clientPortNumbers[j] != 0)
 				}//for(int j = 0; j < this.clientSockets.length; j++)
-			}
+			}//if(this.receivedRouterInfo[i])
 
-		}
+		}//for(int i = 0; i < this.receivedRouterInfo.length; i++)
 		
 	}
 	
-	
+	/**
+	 *
+	 */
 
 	public synchronized void processUpdateRoute(){
 				
