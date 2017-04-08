@@ -38,25 +38,25 @@ public class Router {
 	private int routeupdate;
 	private DatagramSocket clientSocket;
 	private InetAddress IPAddress;
-	private DataOutputStream outputStream;
-	private DataInputStream inputStream;
+//	private DataOutputStream outputStream;
+//	private DataInputStream inputStream;
 	private static final int MAX_BYTE_SIZE = 1000;
 	private int[] allNodesDistance;
 	private boolean[] receivedRouterInfo;
 	private static final int MAX_NODES = 10;
-	LinkedList<LinkState> routers = new LinkedList<LinkState>();
+//	LinkedList<LinkState> routers = new LinkedList<LinkState>();
 	private boolean end = false;
 	private static final int INFINITE_LENGTH = 999;
-	private int [] origNodeDist;
+//	private int [] origNodeDist;
 	private int [][] nodeInfo;
-	private LinkState [] connectors;
-	private int ports[];
+//	private LinkState [] connectors;
+//	private int ports[];
 	private DatagramSocket[] clientSockets;
 	private Timer theTimer;
 	private int amountOfTimesSent = 0;
 	private static final int NEXT_ROUTER = 11;
 	private int clientPortNumbers[];
-	private int routerDist[];
+//	private int routerDist[];
 	private Timer calcTimer;
 	private int numRouters;
 	private int[] closestRouters;
@@ -84,8 +84,8 @@ public class Router {
 		this.routeupdate = routeupdate;
 		this.allNodesDistance = new int[MAX_NODES];
 		this.receivedRouterInfo = new boolean[MAX_NODES];
-		this.origNodeDist = new int[MAX_NODES];
-		this.ports = new int[MAX_NODES];
+//		this.origNodeDist = new int[MAX_NODES];
+//		this.ports = new int[MAX_NODES];
 		
 		for(int i = 0; i < MAX_NODES; i++)
 		{
@@ -113,26 +113,21 @@ public class Router {
           		System.out.println(i + "\t\t   " + distancevector[i] +  "\t\t\t" +  prev[i]);
           	}
         	
-//    		this.file_name = file_name;
- //   		Path path = Paths.get(this.file_name);
         	Path path = Paths.get(this.configfile);
-    		byte [] fileByteInfo = null;
-    		Socket socket = null;
-    		byte checkForReceivedInfo = Byte.MIN_VALUE;
-    		byte [] dataToSend = new byte[MAX_BYTE_SIZE];
+//    		byte [] fileByteInfo = null;
+//    		Socket socket = null;
+//    		byte checkForReceivedInfo = Byte.MIN_VALUE;
+//    		byte [] dataToSend = new byte[MAX_BYTE_SIZE];
     		byte [] configFileInfo = null;
-//    		Segment segment = null;
-
-//    		queue = new TxQueue(this.window);
-    		int indexFileInfo;
-    		int indexSender;
-    		int seqNum = 0;
+//    		int indexFileInfo;
+//    		int indexSender;
+//    		int seqNum = 0;
     		int index = 0;
-    		int routerDist;
+//    		int routerDist;
     		int port;
-    		LinkStateReceiver receiver;
-    		Timer[] timers;
-    		int timerCount = 0;
+//    		LinkStateReceiver receiver;
+//    		Timer[] timers;
+//    		int timerCount = 0;
     		this.theTimer = new Timer();
     		this.calcTimer = new Timer();
     		int otherRouter;
@@ -140,8 +135,6 @@ public class Router {
     	
     		
     		try {
-  //  			fileByteInfo = Files.readAllBytes(path);
- //   			socket = new Socket(this.server_name,SERVER_PORT);
     			configFileInfo = Files.readAllBytes(path);
 				IPAddress = InetAddress.getByName(this.peerip);
     			
@@ -152,7 +145,6 @@ public class Router {
 				this.receivedRouterInfo = new boolean[numRouters];
 				this.clientPortNumbers = new int[numRouters];
 				this.closestRouters = new int[numRouters];
-//				System.out.println(configFileInfo[0]);
 				clientSocket = new DatagramSocket(this.port);
 				
 				
@@ -164,7 +156,6 @@ public class Router {
 				for(int i = 0; i < this.nodeInfo.length; i++)
 				{
 					this.nodeInfo[i] = new int[this.nodeInfo.length+2];
-//					System.out.println("this.nodeInfo[" + i + " ].length = " + this.nodeInfo[i].length);
 				}
 				
 				for(int i = 0; i < this.nodeInfo.length; i++)
@@ -202,18 +193,10 @@ public class Router {
 						}
 					}
 					otherRouter = configFileInfo[index]-'A';
-/*					System.out.println(configFileInfo[index-2]);
-					System.out.println(configFileInfo[index-1]);
-					System.out.println(configFileInfo[index]);*/
-//					System.out.println(otherRouter);
 					this.receivedRouterInfo[otherRouter] = true;
 					this.nodeInfo[this.routerid][otherRouter] = configFileInfo[index+4]-'0';
     				port = ((configFileInfo[index + 6]-'0')*1000) + ((configFileInfo[index+7]-'0')*100) + ((configFileInfo[index+8]-'0')*10) + (configFileInfo[index+9]-'0');
- /*   				System.out.println("Port is " + port);
-    				System.out.println("router is " + otherRouter);*/
-    				this.clientPortNumbers[otherRouter] = port;
-//    				System.out.println("Port of router " + otherRouter + " is " + this.clientPortNumbers[otherRouter]);
-    				
+     				this.clientPortNumbers[otherRouter] = port;    				
     				index += NEXT_ROUTER;
 				}
 				
@@ -224,123 +207,7 @@ public class Router {
 				this.theTimer.scheduleAtFixedRate(new LinkStateVender(this), 0, 1000);
 				
 				this.calcTimer.scheduleAtFixedRate(new MinimumDistanceCalculate(this), 10000, 10000);
-				
-/*    			for(int i = 0; i < configFileInfo.length; i++)
-    			{
-    				System.out.print(configFileInfo[i] + " ");
-    				byte[] convert = new byte[1];
-    				convert[0] = configFileInfo[i];
-    				System.out.print(new String(convert,"UTF-8"));
-    				System.out.println();
-    			}
-
-    			System.out.println(configFileInfo[2] - 'A');
-    			System.out.println(configFileInfo.length);
-    			
-    			this.nodeInfo = new int[configFileInfo[0]+1][];
-    			timers = new Timer[configFileInfo[0]];
-    			ports = new int[configFileInfo[0]];
-    			
-    			for(int i = 0; i < ports.length; i++)
-    			{
-    				ports[i] = -1;
-    			}
-    			
-    			for(int i = 0; i < this.nodeInfo.length-1; i++)
-    			{
-    				this.nodeInfo[i] = new int[this.nodeInfo.length];
-    				this.nodeInfo[this.nodeInfo.length][i] = Integer.MIN_VALUE;
-    			}
-    			
-    			
-    			this.connectors = new LinkState[configFileInfo[0]];
-    			this.allNodesDistance = new int[configFileInfo[0] + 2];
-    			this.allNodesAdjacent = new boolean[configFileInfo[0]];
-    			this.allNodesDistance[this.allNodesDistance.length-2] = this.routerid;
-    			this.allNodesDistance[this.allNodesDistance.length-1] = 0;
-    			this.clientSockets = new DatagramSocket[configFileInfo[0]];
-    			
-    			for(int i = 0; i < this.clientSockets.length; i++)
-    			{
-    				this.clientSockets[i] = null;
-    			}
-    			
-    			for(int i = 0; i < this.allNodesAdjacent.length; i++)
-    			{
-    				this.allNodesDistance[i] = INFINITE_LENGTH;
-    				this.allNodesAdjacent[i] = false;
-    			}
-    			
-    			
-    			while(index < configFileInfo.length)
-    			{
-    				
-    			}
-    			
-    			while(index < configFileInfo.length)
-    			{
-    				
-    				routerDist = configFileInfo[index + 2] - 'A';
-    				this.allNodesDistance[routerDist] = configFileInfo[index + 6];
-    				this.origNodeDist[routerDist] = configFileInfo[index + 6];
-    				port = ((configFileInfo[index + 8]-'0')*1000) + ((configFileInfo[index+9]-'0')*100) + ((configFileInfo[index+10]-'0')*10) + (configFileInfo[index+11]-'0');
-  
-    				System.out.println(configFileInfo[index+8]);
-    				System.out.println(configFileInfo[index+9]);
-    				System.out.println(configFileInfo[index+10]);
-    				System.out.println(configFileInfo[index+11]);
-    				System.out.println(port);
-    				routers.add(new LinkState(this.routerid,port,this.allNodesDistance));
-    				this.allNodesAdjacent[routerDist] = true;
-    				
-    				if(routerDist < this.clientSockets.length)
-    				{
-    					this.clientSockets[routerDist] = new DatagramSocket(port);
-    				}
-    				
-    				
-    				/*    				if(timerCount < timers.length)
-    				{
-    					
-    					ports[timerCount] = port;
-        				connectors[timerCount] = new LinkState(this.routerid,port,this.allNodesDistance);    					
-    					timers[timerCount] = new Timer();
-    					timers[timerCount].scheduleAtFixedRate(new LinkStateVender(this,clientSocket,connectors[timerCount],port), 0,1000);
-    				}*/
- //   				timerCount++;
- //   				index += 13;    				
- /*   			}
-    			
-    			
-    			
-    			
-    			
-    			checkForReceivedInfo = 1;*/
-    			
-    			
-//    			segment = new Segment();
-/*    			clientSocket = new DatagramSocket(this.routerid);
-        		receiver = new LinkStateReceiver(this,clientSocket);
-        		Thread aThread = new Thread(receiver);
-        		aThread.start();*/
-        		
-        		
-        		
-    			//Start the thread that will receive the acks
-//    			AckHandler handler = new AckHandler(this, clientSocket);
-//    			Thread aThread = new Thread(handler);
- //   			aThread.start();
-//    			aTimer = new Timer();
-    			
-    			
-//    			IPAddress = InetAddress.getByName("localhost");
-
-    			
- //   			outputStream = new DataOutputStream(socket.getOutputStream());
-//    			outputStream.writeUTF(this.file_name);			
-//    			outputStream.flush();
- //   			inputStream = new DataInputStream(socket.getInputStream());
- //   			checkForReceivedInfo = inputStream.readByte();				
+			
     			
     			} catch (IOException e) {
     				// TODO Auto-generated catch block
@@ -365,8 +232,8 @@ public class Router {
 	public synchronized void processUpDateDS(DatagramPacket receivepacket)
 	{
 		LinkState state = new LinkState(receivepacket);
-		boolean infiniteLength = true;
-		int [] distUpdate = state.cost;
+//		boolean infiniteLength = true;
+//		int [] distUpdate = state.cost;
 		int index;
 	
 		
@@ -384,13 +251,6 @@ public class Router {
 		}
 
 		
-//		System.out.print("Received [");
-//		System.out.print(state.getCost()[0]);
-//		for(int i = 1; i < state.getCost().length; i++)
-//		{
-	/*		System.out.print(", " + state.getCost()[i]);
-		}
-		System.out.println("] from " + index);*/
 
 		if(index >= this.nodeInfo.length || index == this.routerid)
 		{
@@ -408,7 +268,6 @@ public class Router {
 		this.receivedRouterInfo[index] = true;
 		
 		try {
-//			System.out.println("Updating table: " + index);
 			this.nodeInfo[index] = copyArray(this.nodeInfo[index],state.getCost());
 			
 			this.theTimer.cancel();
@@ -420,89 +279,7 @@ public class Router {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-/*		try {
-			Thread.sleep(1000);
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}*/
-/*		
-		for(index = 0; index < state.getCost().length-2; index++)
-		{
-			if(state.getCost()[index] == 0)
-			{
-				break;
-			}
-		}
-		
-		if(this.nodeInfo[this.nodeInfo.length-1][index] == state.getCost()[state.getCost().length-1])
-		{
-			return;
-		}
-		else
-		{
-			
-			try {
-				this.nodeInfo[index] = copyArray(this.nodeInfo[index],state.getCost());
 
-				this.theTimer.cancel();
-				
-				this.theTimer.scheduleAtFixedRate(new LinkStateVender(this,state), 0, 1000);
-				
-				
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				return;
-			}
-			
-		}
-		*/
-		
-		
-/*		
-		
-		for(int i = 0; i < distUpdate.length; i++)
-		{
-			if(distUpdate[i] < INFINITE_LENGTH)
-			{
-				infiniteLength = false;
-				break;
-			}
-		}
-		
-		if(infiniteLength)
-		{
-			return;
-		}
-		
-		for(int i = 0; i < this.allNodesDistance.length && i < distUpdate.length; i++)
-		{
-			if(this.allNodesDistance[i] > distUpdate[i])
-			{
-				this.allNodesDistance[i] = distUpdate[i];
-			}
-		}
-		
-		LinkedList<LinkState> newRouters = new LinkedList<LinkState>();
-		
-		
-		for(int i = 0; i < allNodesAdjacent.length; i++)
-		{
-			if(allNodesAdjacent[i])
-			{
-				
-			}
-		}
-		
-		for(LinkState routerThrough : this.routers)
-		{
-			if(routerThrough.destId < allNodesAdjacent.length && allNodesAdjacent[routerThrough.destId])
-			{
-				
-			}
-		}
-
-*/		
 		
 	// Update data structure(s).
 	// Forward link state message received to neighboring nodes
@@ -571,100 +348,32 @@ public class Router {
 						sendPacket = new DatagramPacket(state.getBytes(),state.getBytes().length,this.IPAddress,this.clientPortNumbers[j]);
 						try {
 							clientSocket.send(sendPacket);
-//							System.out.println("Sent out socket " + clientSocket.getLocalPort());
-//							System.out.println("Sent packet");
 						} catch (IOException e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
 					}//if(this.clientPortNumbers[j] != 0)
-					else if(this.clientSockets[j] == null)
-					{
-//						System.out.println("Socket " + j + " is null");
-					}
-					else 
-					{
-//						System.out.println("Port of " + j + " is " + this.clientSocket.getPort());
-					}
-				}
+				}//for(int j = 0; j < this.clientSockets.length; j++)
 			}
-			else
-			{
-//				System.out.println("No router info for " + i);
-			}
-		}
-		
-	}
-	
-	public synchronized void processUpdateNeighbor(LinkState state)
-	{
-		DatagramPacket sendPacket;
-		
-		for(int i = 0; i < clientSockets.length; i++)
-		{
-			if(clientSockets[i] != null)
-			{
-				sendPacket = new DatagramPacket(state.getBytes(),state.getBytes().length,this.IPAddress,clientSockets[i].getPort());
-				try {
-					clientSockets[i].send(sendPacket);
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			}
+
 		}
 		
 	}
 	
 	
-	public synchronized void processUpdateNeighbor(LinkState state, int port){
-		
-		Socket socket;
-		DatagramSocket clientSocket;
-		DataOutputStream outputStream;
-		DatagramPacket sendPacket;
-		try {
-			socket = new Socket(this.peerip,port);
-			clientSocket = new DatagramSocket(port);
-//			outputStream = new DataOutputStream(socket.getOutputStream());
-			sendPacket = new DatagramPacket(state.getBytes(),state.getBytes().length);
-//			outputStream.writeUTF(this.peerip);
-//			outputStream.flush();
-			clientSocket.send(sendPacket);
-			clientSocket.close();
-			
-			
-			
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	
-	
-		
-	// Send node’s link state vector to neighboring nodes as link
-	// state message.
-	// Schedule task if Method-1 followed to implement recurring
-	// timer task.
-	}
+
 	public synchronized void processUpdateRoute(){
-		
-//		System.out.println("Entered processUpdateRoute");
-		
+				
 		int size = 999;
 		int minNode = -1;
 		boolean usedNodes[] = new boolean[this.numRouters];
 
-/*		System.out.println(usedNodes.length + ": usedNodes.length");
-		System.out.println(this.numRouters + ": numRouters");
-		System.out.println(this.routerid + ": routerid");*/
 		
 		
 		for(int i = 0; i < this.receivedRouterInfo.length; i++)
 		{
 			if(!this.receivedRouterInfo[i])
 			{
-//				System.out.println("Cant do calc yet");
 				return;
 			}
 		}
@@ -686,70 +395,38 @@ public class Router {
 				{
 					size = this.nodeInfo[this.routerid][i];
 					minNode = i;
-				}
+				}//for(int i = 0; i < usedNodes.length; i++)
+
 
 			}
-//			System.out.println();
 			usedNodes[minNode] = true;
 			size = 999;
 			
 			for(int i = 0; i < usedNodes.length; i++)
 			{
-					
-/*				System.out.println("this.nodeInfo[this.routerid][" + i + "] = " + this.nodeInfo[this.routerid][i]);
-				System.out.println("this.nodeInfo[this.routerid][" + minNode + "] = " + this.nodeInfo[this.routerid][minNode]);
-				System.out.println("this.nodeInfo[" + minNode + "][" + i + "] = " + this.nodeInfo[minNode][i]);
-*/
-				
-				
-				
 				this.nodeInfo[this.routerid][i] = minimum(this.nodeInfo[this.routerid][i],
 						this.nodeInfo[this.routerid][minNode] + this.nodeInfo[minNode][i]);
 				
 				if(this.nodeInfo[this.routerid][i] < this.closestRouters[i])
 				{
 					this.closestRouters[i] = this.nodeInfo[minNode][this.nodeInfo[minNode].length-2];
-/*					System.out.println("Updated closest routers: ");
-					for(int k = 0; k < this.closestRouters.length; k++)
-					{
-						System.out.print(this.closestRouters[k] + " ");
-					}
-					System.out.println();*/
-				}
-				
-/*				System.out.print("New route for router: ");
-				
-				for(int j = 0; j < usedNodes.length; j++)
-				{
-					System.out.print(this.nodeInfo[this.routerid][j] + " ");
-				}
-				System.out.println();*/
 
-			}			
-			
-/*			for(int i = 0; i < usedNodes.length; i++)
-			{
-				System.out.print(usedNodes[i] + " ");
-			}
-			System.out.println();
+				}
+			}//for(int i = 0; i < usedNodes.length; i++)
 			
 			
-			for(int i = 0; i < this.closestRouters.length; i++)
-			{
-				System.out.print(this.closestRouters[i] + " ");
-			}
-			System.out.println();*/
 			
-			try {
-				Thread.sleep(1000);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
 			
 		}while(!allNodesUsed(usedNodes));
 		
-//		System.out.println("About to leave updateRoute");
+		
+    	System.out.println("Routing Info");
+    	System.out.println("RouterID \t Distance");
+    	for(int i = 0; i < this.numRouters; i++)
+      	{
+      		System.out.println(i + "\t\t   " + this.nodeInfo[this.routerid][i]);
+      	}
+		
 		
 		this.theTimer.cancel();
 		
@@ -783,12 +460,10 @@ public class Router {
 	{
 		if(firstNum < secondNum)
 		{
-//			System.out.println(firstNum + " is smaller than " + secondNum);
 			return firstNum;
 		}
 		else
 		{
-//			System.out.println(secondNum + " is smaller than " + firstNum);
 			return secondNum;
 		}
 	}

@@ -25,9 +25,8 @@ public class LinkStateReceiver implements Runnable
 			DatagramPacket receivePacket = new DatagramPacket(linkStateInfo,linkStateInfo.length);	
 			
 			try {
-						clientSocket.receive(receivePacket);
-//						System.out.println(this.router.getRouterId());
-						router.processUpDateDS(receivePacket);
+				clientSocket.receive(receivePacket);
+				router.processUpDateDS(receivePacket);
 			} catch (IOException e) {
 				
 				if(router.isEnd())
