@@ -184,7 +184,7 @@ public class Router {
 						}
 					}
 					
-					//otherRouter is the router that is currently being read
+					//otherRouter is the router that is currently being read from the file
 					otherRouter = configFileInfo[index]-'A';
 					this.receivedRouterInfo[otherRouter] = true;
 					this.nodeInfo[this.routerid][otherRouter] = configFileInfo[index+4]-'0';
@@ -290,10 +290,7 @@ public class Router {
 			e.printStackTrace();
 		}
 
-		
-	// Update data structure(s).
-	// Forward link state message received to neighboring nodes
-	// based on broadcast algorithm used.
+
 	}
 	
 	
@@ -482,14 +479,6 @@ public class Router {
 		this.theTimer = new Timer();
 		this.theTimer.scheduleAtFixedRate(new LinkStateVender(this), 0, 1000);
 		
-		
-		
-	// If link state vectors of all nodes received,
-	// Yes => Compute route info based on Dijkstra’s algorithm
-	// and print as per the output format.
-	// No => ignore the event.
-	// Schedule task if Method-1 followed to implement recurring
-	// timer task.
 	}
 	
 	
