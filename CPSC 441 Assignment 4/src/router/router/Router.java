@@ -152,7 +152,7 @@ public class Router {
 				this.receivedRouterInfo = new boolean[numRouters];
 				this.clientPortNumbers = new int[numRouters];
 				this.closestRouters = new int[numRouters];
-				System.out.println(configFileInfo[0]);
+//				System.out.println(configFileInfo[0]);
 				clientSocket = new DatagramSocket(this.port);
 				
 				
@@ -164,7 +164,7 @@ public class Router {
 				for(int i = 0; i < this.nodeInfo.length; i++)
 				{
 					this.nodeInfo[i] = new int[this.nodeInfo.length+2];
-					System.out.println("this.nodeInfo[" + i + " ].length = " + this.nodeInfo[i].length);
+//					System.out.println("this.nodeInfo[" + i + " ].length = " + this.nodeInfo[i].length);
 				}
 				
 				for(int i = 0; i < this.nodeInfo.length; i++)
@@ -202,17 +202,17 @@ public class Router {
 						}
 					}
 					otherRouter = configFileInfo[index]-'A';
-					System.out.println(configFileInfo[index-2]);
+/*					System.out.println(configFileInfo[index-2]);
 					System.out.println(configFileInfo[index-1]);
-					System.out.println(configFileInfo[index]);
-					System.out.println(otherRouter);
+					System.out.println(configFileInfo[index]);*/
+//					System.out.println(otherRouter);
 					this.receivedRouterInfo[otherRouter] = true;
 					this.nodeInfo[this.routerid][otherRouter] = configFileInfo[index+4]-'0';
     				port = ((configFileInfo[index + 6]-'0')*1000) + ((configFileInfo[index+7]-'0')*100) + ((configFileInfo[index+8]-'0')*10) + (configFileInfo[index+9]-'0');
-    				System.out.println("Port is " + port);
-    				System.out.println("router is " + otherRouter);
+ /*   				System.out.println("Port is " + port);
+    				System.out.println("router is " + otherRouter);*/
     				this.clientPortNumbers[otherRouter] = port;
-    				System.out.println("Port of router " + otherRouter + " is " + this.clientPortNumbers[otherRouter]);
+//    				System.out.println("Port of router " + otherRouter + " is " + this.clientPortNumbers[otherRouter]);
     				
     				index += NEXT_ROUTER;
 				}
@@ -384,13 +384,13 @@ public class Router {
 		}
 
 		
-		System.out.print("Received [");
-		System.out.print(state.getCost()[0]);
-		for(int i = 1; i < state.getCost().length; i++)
-		{
-			System.out.print(", " + state.getCost()[i]);
+//		System.out.print("Received [");
+//		System.out.print(state.getCost()[0]);
+//		for(int i = 1; i < state.getCost().length; i++)
+//		{
+	/*		System.out.print(", " + state.getCost()[i]);
 		}
-		System.out.println("] from " + index);
+		System.out.println("] from " + index);*/
 
 		if(index >= this.nodeInfo.length || index == this.routerid)
 		{
@@ -408,7 +408,7 @@ public class Router {
 		this.receivedRouterInfo[index] = true;
 		
 		try {
-			System.out.println("Updating table: " + index);
+//			System.out.println("Updating table: " + index);
 			this.nodeInfo[index] = copyArray(this.nodeInfo[index],state.getCost());
 			
 			this.theTimer.cancel();
@@ -590,7 +590,7 @@ public class Router {
 			}
 			else
 			{
-				System.out.println("No router info for " + i);
+//				System.out.println("No router info for " + i);
 			}
 		}
 		
@@ -649,22 +649,22 @@ public class Router {
 	}
 	public synchronized void processUpdateRoute(){
 		
-		System.out.println("Entered processUpdateRoute");
+//		System.out.println("Entered processUpdateRoute");
 		
 		int size = 999;
 		int minNode = -1;
 		boolean usedNodes[] = new boolean[this.numRouters];
 
-		System.out.println(usedNodes.length + ": usedNodes.length");
+/*		System.out.println(usedNodes.length + ": usedNodes.length");
 		System.out.println(this.numRouters + ": numRouters");
-		System.out.println(this.routerid + ": routerid");
+		System.out.println(this.routerid + ": routerid");*/
 		
 		
 		for(int i = 0; i < this.receivedRouterInfo.length; i++)
 		{
 			if(!this.receivedRouterInfo[i])
 			{
-				System.out.println("Cant do calc yet");
+//				System.out.println("Cant do calc yet");
 				return;
 			}
 		}
@@ -689,17 +689,17 @@ public class Router {
 				}
 
 			}
-			System.out.println();
+//			System.out.println();
 			usedNodes[minNode] = true;
 			size = 999;
 			
 			for(int i = 0; i < usedNodes.length; i++)
 			{
 					
-				System.out.println("this.nodeInfo[this.routerid][" + i + "] = " + this.nodeInfo[this.routerid][i]);
+/*				System.out.println("this.nodeInfo[this.routerid][" + i + "] = " + this.nodeInfo[this.routerid][i]);
 				System.out.println("this.nodeInfo[this.routerid][" + minNode + "] = " + this.nodeInfo[this.routerid][minNode]);
 				System.out.println("this.nodeInfo[" + minNode + "][" + i + "] = " + this.nodeInfo[minNode][i]);
-
+*/
 				
 				
 				
@@ -709,25 +709,25 @@ public class Router {
 				if(this.nodeInfo[this.routerid][i] < this.closestRouters[i])
 				{
 					this.closestRouters[i] = this.nodeInfo[minNode][this.nodeInfo[minNode].length-2];
-					System.out.println("Updated closest routers: ");
+/*					System.out.println("Updated closest routers: ");
 					for(int k = 0; k < this.closestRouters.length; k++)
 					{
 						System.out.print(this.closestRouters[k] + " ");
 					}
-					System.out.println();
+					System.out.println();*/
 				}
 				
-				System.out.print("New route for router: ");
+/*				System.out.print("New route for router: ");
 				
 				for(int j = 0; j < usedNodes.length; j++)
 				{
 					System.out.print(this.nodeInfo[this.routerid][j] + " ");
 				}
-				System.out.println();
+				System.out.println();*/
 
 			}			
 			
-			for(int i = 0; i < usedNodes.length; i++)
+/*			for(int i = 0; i < usedNodes.length; i++)
 			{
 				System.out.print(usedNodes[i] + " ");
 			}
@@ -738,7 +738,7 @@ public class Router {
 			{
 				System.out.print(this.closestRouters[i] + " ");
 			}
-			System.out.println();
+			System.out.println();*/
 			
 			try {
 				Thread.sleep(1000);
@@ -749,7 +749,7 @@ public class Router {
 			
 		}while(!allNodesUsed(usedNodes));
 		
-		System.out.println("About to leave updateRoute");
+//		System.out.println("About to leave updateRoute");
 		
 		this.theTimer.cancel();
 		
@@ -783,12 +783,12 @@ public class Router {
 	{
 		if(firstNum < secondNum)
 		{
-			System.out.println(firstNum + " is smaller than " + secondNum);
+//			System.out.println(firstNum + " is smaller than " + secondNum);
 			return firstNum;
 		}
 		else
 		{
-			System.out.println(secondNum + " is smaller than " + firstNum);
+//			System.out.println(secondNum + " is smaller than " + firstNum);
 			return secondNum;
 		}
 	}
